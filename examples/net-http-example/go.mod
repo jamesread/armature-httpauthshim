@@ -2,7 +2,7 @@ module net-http-example
 
 go 1.26.0
 
-require github.com/jamesread/httpauthshim v0.2.0
+require github.com/jamesread/armature-httpauthshim v0.2.0
 
 require (
 	github.com/alexedwards/argon2id v1.0.0 // indirect
@@ -14,4 +14,4 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 )
 
-replace github.com/jamesread/httpauthshim => ../..
+replace github.com/jamesread/armature-httpauthshim => ../..

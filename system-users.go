@@ -1,7 +1,7 @@
 package auth
 
 import (
-	authpublic "github.com/jamesread/httpauthshim/authpublic"
+	authpublic "github.com/jamesread/armature-httpauthshim/authpublic"
 )
 
 func UserGuest(cfg *authpublic.Config) *authpublic.AuthenticatedUser {

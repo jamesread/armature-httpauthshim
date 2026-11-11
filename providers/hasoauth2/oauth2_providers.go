@@ -1,7 +1,7 @@
 package hasoauth2
 
 import (
-	authTypes "github.com/jamesread/httpauthshim/authpublic"
+	authTypes "github.com/jamesread/armature-httpauthshim/authpublic"
 	"golang.org/x/oauth2/endpoints"
 )
 

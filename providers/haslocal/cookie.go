@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"net/http"
 
-	"github.com/jamesread/httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
 )
 
 // NewSessionID generates a cryptographically random session ID (256 bits).

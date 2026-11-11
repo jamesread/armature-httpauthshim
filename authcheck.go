@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	types "github.com/jamesread/httpauthshim/authpublic"
+	types "github.com/jamesread/armature-httpauthshim/authpublic"
 	log "github.com/sirupsen/logrus"
 )
 

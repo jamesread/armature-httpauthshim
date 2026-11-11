@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/jamesread/httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
 )
 
 // Lookup resolves a cookie SID or Bearer token to a username.

@@ -1,6 +1,6 @@
 # net/http Example
 
-This example demonstrates how to use the `httpauthshim` library with a standard Go `net/http` server.
+This example demonstrates how to use the `armature-httpauthshim` library with a standard Go `net/http` server.
 
 ## Features Demonstrated
 
@@ -19,7 +19,7 @@ This example demonstrates how to use the `httpauthshim` library with a standard 
 1. **Install dependencies**:
    ```bash
    go mod init net-http-example
-   go get github.com/jamesread/httpauthshim
+   go get github.com/jamesread/armature-httpauthshim
    ```
 
 2. **Set up OAuth2 (optional)**:

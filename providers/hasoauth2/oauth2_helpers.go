@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	authTypes "github.com/jamesread/httpauthshim/authpublic"
+	authTypes "github.com/jamesread/armature-httpauthshim/authpublic"
 )
 
 const oauthClientError = "OAuth2 authentication failed"

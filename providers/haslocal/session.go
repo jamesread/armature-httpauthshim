@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"net/http"
 
-	types "github.com/jamesread/httpauthshim/authpublic"
-	"github.com/jamesread/httpauthshim/sessions"
+	types "github.com/jamesread/armature-httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 	"github.com/jamesread/golure/pkg/redact"
 	log "github.com/sirupsen/logrus"
 )

@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jamesread/httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -116,7 +116,7 @@ func TestCheckUserFromMtls_FromSANEmail(t *testing.T) {
 
 	cfg := &authpublic.Config{
 		Mtls: authpublic.MtlsConfig{
-			Enabled:             true,
+			Enabled:              true,
 			UsernameFromSANEmail: true,
 		},
 	}
@@ -141,7 +141,7 @@ func TestCheckUserFromMtls_FromSANEmail_StripDomain(t *testing.T) {
 
 	cfg := &authpublic.Config{
 		Mtls: authpublic.MtlsConfig{
-			Enabled:                 true,
+			Enabled:                  true,
 			UsernameFromSANEmail:     true,
 			UsernameStripEmailDomain: true,
 		},
@@ -194,8 +194,8 @@ func TestCheckUserFromMtls_GroupsFromSANDNS(t *testing.T) {
 
 	cfg := &authpublic.Config{
 		Mtls: authpublic.MtlsConfig{
-			Enabled:        true,
-			UsernameFromCN: true,
+			Enabled:         true,
+			UsernameFromCN:  true,
 			GroupFromSANDNS: true,
 		},
 	}
@@ -221,8 +221,8 @@ func TestCheckUserFromMtls_RequireClientCert(t *testing.T) {
 	cfg := &authpublic.Config{
 		Mtls: authpublic.MtlsConfig{
 			Enabled:           true,
-			RequireClientCert:  true,
-			UsernameFromCN:     true,
+			RequireClientCert: true,
+			UsernameFromCN:    true,
 		},
 	}
 

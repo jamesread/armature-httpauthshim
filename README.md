@@ -1,17 +1,17 @@
 <div align = "center">
-  <img alt = "project logo" src = "https://github.com/jamesread/httpauthshim/blob/main/logo.svg" width = "128" />
-  <h1>httpauthshim</h1>
+  <img alt = "project logo" src = "logo.svg" width = "128" />
+  <h1>armature-httpauthshim</h1>
 
-  The glue code for HTTP authentication in Go.
+  The glue code for HTTP authentication in Go: answers **who is this HTTP request** for SOA apps.
 
-  [![Maturity Shield](https://img.shields.io/badge/maturity-alpha-red.svg)](https://github.com/jamesread/httpauthshim)
+  [![Maturity Badge](https://img.shields.io/badge/maturity-alpha-red.svg)](#none)
   [![Discord](https://img.shields.io/discord/846737624960860180?label=Discord%20Server)](https://discord.gg/jhYWWpNJ3v)
+  [![Go Report Card](https://goreportcard.com/badge/github.com/jamesread/armature-httpauthshim)](https://goreportcard.com/report/github.com/jamesread/armature-httpauthshim)
+
 </div>
 
-> [!IMPORTANT]
-> **This module has moved to [`github.com/jamesread/armature-httpauthshim`](https://github.com/jamesread/armature-httpauthshim).**
-> Existing versions of `github.com/jamesread/httpauthshim` (v0.2.x and earlier) keep working, but new releases are only published at the new path.
-> The API is unchanged; to migrate, replace the import prefix:
+> [!NOTE]
+> **Formerly `github.com/jamesread/httpauthshim`.** Existing versions at the old path (v0.2.x and earlier) keep working, but new releases are only published here. The API is unchanged; to migrate, replace the import prefix:
 >
 > ```sh
 > grep -rl 'github.com/jamesread/httpauthshim' --include='*.go' --include=go.mod . | xargs sed -i 's#github.com/jamesread/httpauthshim#github.com/jamesread/armature-httpauthshim#g'
@@ -32,7 +32,7 @@ HTTP Auth against OAuth2, mTLS, external JWT (key/hmac), local users, trusted he
 ## Installation
 
 ```bash
-go get github.com/jamesread/httpauthshim
+go get github.com/jamesread/armature-httpauthshim
 ```
 
 ## Quick Start
@@ -44,10 +44,10 @@ import (
     "log"
     "net/http"
 
-    "github.com/jamesread/httpauthshim"
-    "github.com/jamesread/httpauthshim/authpublic"
-    "github.com/jamesread/httpauthshim/providers/hasoauth2"
-    "github.com/jamesread/httpauthshim/sessions"
+    "github.com/jamesread/armature-httpauthshim"
+    "github.com/jamesread/armature-httpauthshim/authpublic"
+    "github.com/jamesread/armature-httpauthshim/providers/hasoauth2"
+    "github.com/jamesread/armature-httpauthshim/sessions"
 )
 
 var authCtx *auth.AuthShimContext
@@ -130,8 +130,8 @@ Built-in support for GitHub and Google OAuth2 providers. Easily extensible for o
 
 ```go
 import (
-    "github.com/jamesread/httpauthshim/providers/hasoauth2"
-    "github.com/jamesread/httpauthshim/sessions"
+    "github.com/jamesread/armature-httpauthshim/providers/hasoauth2"
+    "github.com/jamesread/armature-httpauthshim/sessions"
 )
 
 // Create session storage with YAML persistence
@@ -157,7 +157,7 @@ ctx.AddProvider(handler.CheckUserFromOAuth2Cookie)
 Password-based authentication with Argon2id hashing:
 
 ```go
-import "github.com/jamesread/httpauthshim/providers/haslocal"
+import "github.com/jamesread/armature-httpauthshim/providers/haslocal"
 
 // Create password hash
 hash, err := haslocal.CreateHash("userpassword")
@@ -200,7 +200,7 @@ httpHeader:
 Authenticate users based on client certificates in TLS connections:
 
 ```go
-import "github.com/jamesread/httpauthshim/providers/hasmtls"
+import "github.com/jamesread/armature-httpauthshim/providers/hasmtls"
 
 cfg := &authpublic.Config{
     Mtls: authpublic.MtlsConfig{
@@ -297,7 +297,7 @@ accessControlLists:
 Add custom authentication handlers to your `AuthShimContext`:
 
 ```go
-import "github.com/jamesread/httpauthshim/sessions"
+import "github.com/jamesread/armature-httpauthshim/sessions"
 
 // Create session storage with YAML persistence
 sessionStorage := sessions.NewSessionStorage(sessions.NewYAMLPersistence())
@@ -336,7 +336,7 @@ Default YAML session lifetimes follow the OWASP Session Management Cheat Sheet f
 When using `AuthShimContext`, sessions are automatically loaded on creation and managed through the context:
 
 ```go
-import "github.com/jamesread/httpauthshim/sessions"
+import "github.com/jamesread/armature-httpauthshim/sessions"
 
 // Create session storage with YAML persistence
 sessionStorage := sessions.NewSessionStorage(sessions.NewYAMLPersistence())
@@ -362,7 +362,7 @@ ctx.DeleteUserSession("provider", "session-id")
 **⚠️ DEPRECATED**: The following functions use global session storage and are deprecated. Use `AuthShimContext` methods instead for instance-based storage.
 
 ```go
-import "github.com/jamesread/httpauthshim/sessions"
+import "github.com/jamesread/armature-httpauthshim/sessions"
 
 // Register a session (uses global storage - DEPRECATED)
 sessions.RegisterUserSession(cfg, "provider", "session-id", "username", "usergroup")

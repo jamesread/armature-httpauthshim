@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	authpublic "github.com/jamesread/httpauthshim/authpublic"
+	authpublic "github.com/jamesread/armature-httpauthshim/authpublic"
 	"github.com/stretchr/testify/assert"
 )
 

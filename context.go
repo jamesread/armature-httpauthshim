@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jamesread/httpauthshim/authpublic"
-	"github.com/jamesread/httpauthshim/sessions"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 	log "github.com/sirupsen/logrus"
 )
 

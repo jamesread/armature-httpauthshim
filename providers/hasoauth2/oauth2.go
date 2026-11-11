@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
-	authTypes "github.com/jamesread/httpauthshim/authpublic"
-	"github.com/jamesread/httpauthshim/sessions"
+	authTypes "github.com/jamesread/armature-httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )

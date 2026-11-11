@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/jamesread/httpauthshim/authpublic"
-	"github.com/jamesread/httpauthshim/providers/haslocal"
-	"github.com/jamesread/httpauthshim/sessions"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/providers/haslocal"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

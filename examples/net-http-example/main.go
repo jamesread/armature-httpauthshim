@@ -10,12 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jamesread/httpauthshim"
-	"github.com/jamesread/httpauthshim/authpublic"
-	"github.com/jamesread/httpauthshim/providers/haslocal"
-	"github.com/jamesread/httpauthshim/providers/hasmtls"
-	"github.com/jamesread/httpauthshim/providers/hasoauth2"
-	"github.com/jamesread/httpauthshim/sessions"
+	"github.com/jamesread/armature-httpauthshim"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/providers/haslocal"
+	"github.com/jamesread/armature-httpauthshim/providers/hasmtls"
+	"github.com/jamesread/armature-httpauthshim/providers/hasoauth2"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 )
 
 func main() {

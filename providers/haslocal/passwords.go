@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/alexedwards/argon2id"
-	"github.com/jamesread/httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/authpublic"
 	log "github.com/sirupsen/logrus"
 )
 

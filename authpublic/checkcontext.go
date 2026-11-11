@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/jamesread/httpauthshim/sessions"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 )
 
 type AuthCheckingContext struct {

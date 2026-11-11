@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	authpublic "github.com/jamesread/httpauthshim/authpublic"
+	authpublic "github.com/jamesread/armature-httpauthshim/authpublic"
 	log "github.com/sirupsen/logrus"
 )
 

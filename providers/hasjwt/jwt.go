@@ -16,7 +16,7 @@ import (
 
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/golang-jwt/jwt/v5"
-	authtypes "github.com/jamesread/httpauthshim/authpublic"
+	authtypes "github.com/jamesread/armature-httpauthshim/authpublic"
 	log "github.com/sirupsen/logrus"
 )
 

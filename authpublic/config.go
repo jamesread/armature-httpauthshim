@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamesread/httpauthshim/sessions"
+	"github.com/jamesread/armature-httpauthshim/sessions"
 )
 
 type Config struct {

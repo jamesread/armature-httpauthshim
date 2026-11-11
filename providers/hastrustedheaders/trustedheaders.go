@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	authpublic "github.com/jamesread/httpauthshim/authpublic"
+	authpublic "github.com/jamesread/armature-httpauthshim/authpublic"
 )
 
 func CheckUserFromHeaders(context *authpublic.AuthCheckingContext) *authpublic.AuthenticatedUser {

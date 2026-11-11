@@ -1,7 +1,7 @@
 .PHONY: build test gocyclo clean
 
 build:
-	@echo "Building httpauthshim..."
+	@echo "Building armature-httpauthshim..."
 	@go build ./...
 
 test:

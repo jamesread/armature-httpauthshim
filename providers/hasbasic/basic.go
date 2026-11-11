@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"strings"
 
-	authpublic "github.com/jamesread/httpauthshim/authpublic"
-	"github.com/jamesread/httpauthshim/providers/haslocal"
+	authpublic "github.com/jamesread/armature-httpauthshim/authpublic"
+	"github.com/jamesread/armature-httpauthshim/providers/haslocal"
 	log "github.com/sirupsen/logrus"
 )
 

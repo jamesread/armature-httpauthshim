@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	authTypes "github.com/jamesread/httpauthshim/authpublic"
+	authTypes "github.com/jamesread/armature-httpauthshim/authpublic"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
