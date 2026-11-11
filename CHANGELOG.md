@@ -1,6 +1,6 @@
 # CHANGELOG
 
-<!-- version list -->
+> Releases from v0.3.0 onwards (as `github.com/jamesread/armature-httpauthshim`) are documented in [GitHub Releases](https://github.com/jamesread/armature-httpauthshim/releases). The entries below are kept for history.
 
 ## v0.2.1 (2026-11-11)
 

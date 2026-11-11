@@ -33,3 +33,6 @@ go.work.sum
 
 
 examples/net-http-example/net-http-example
+
+# semantic-release tooling
+node_modules/
