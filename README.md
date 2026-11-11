@@ -8,6 +8,16 @@
   [![Discord](https://img.shields.io/discord/846737624960860180?label=Discord%20Server)](https://discord.gg/jhYWWpNJ3v)
 </div>
 
+> [!IMPORTANT]
+> **This module has moved to [`github.com/jamesread/armature-httpauthshim`](https://github.com/jamesread/armature-httpauthshim).**
+> Existing versions of `github.com/jamesread/httpauthshim` (v0.2.x and earlier) keep working, but new releases are only published at the new path.
+> The API is unchanged; to migrate, replace the import prefix:
+>
+> ```sh
+> grep -rl 'github.com/jamesread/httpauthshim' --include='*.go' --include=go.mod . | xargs sed -i 's#github.com/jamesread/httpauthshim#github.com/jamesread/armature-httpauthshim#g'
+> go mod tidy
+> ```
+
 HTTP Auth against OAuth2, mTLS, external JWT (key/hmac), local users, trusted headers and even HTTP Basic.
 
 ## Features

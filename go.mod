@@ -1,3 +1,4 @@
+// Deprecated: renamed to github.com/jamesread/armature-httpauthshim
 module github.com/jamesread/httpauthshim
 
 go 1.25.0
