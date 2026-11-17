@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -757,17 +758,10 @@ func appendAddToGroup(usergroup string, addToGroup string) string {
 		return usergroup
 	}
 
-	// Parse existing groups
-	groups := strings.Fields(usergroup)
-
-	// Check if addToGroup is already in the list
-	for _, group := range groups {
-		if group == addToGroup {
-			return usergroup // Already present, no need to add
-		}
+	if slices.Contains(strings.Fields(usergroup), addToGroup) {
+		return usergroup
 	}
 
-	// Append the new group
 	if usergroup == "" {
 		return addToGroup
 	}

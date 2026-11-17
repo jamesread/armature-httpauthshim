@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"slices"
 	"syscall"
 	"time"
 
@@ -16,20 +16,31 @@ import (
 	"github.com/jamesread/armature-httpauthshim/providers/hasmtls"
 	"github.com/jamesread/armature-httpauthshim/providers/hasoauth2"
 	"github.com/jamesread/armature-httpauthshim/sessions"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	// Create authentication configuration
-	cfg := &authpublic.Config{
-		// Trusted headers authentication (must set Enabled behind a trusted proxy)
+	cfg := exampleConfig()
+	sessionStorage := sessions.NewSessionStorage(sessions.NewYAMLPersistence())
+
+	authCtx, err := auth.NewAuthShimContext(cfg, sessionStorage)
+	if err != nil {
+		log.Fatalf("Failed to create auth context: %v", err)
+	}
+
+	oauth2Handler := setupProviders(cfg, authCtx)
+	registerRoutes(cfg, authCtx, oauth2Handler)
+	runServer(listenPort(), authCtx, oauth2Handler)
+}
+
+func exampleConfig() *authpublic.Config {
+	return &authpublic.Config{
 		HttpHeader: authpublic.HttpHeaderConfig{
 			Enabled:      false,
 			Username:     "X-Username",
 			UserGroup:    "X-User-Group",
 			UserGroupSep: ",",
 		},
-
-		// JWT authentication
 		Jwt: authpublic.JwtConfig{
 			Header:         "Authorization",
 			ClaimUsername:  "sub",
@@ -38,25 +49,11 @@ func main() {
 			Aud:            "httpauthshim-example",
 			Issuer:         "httpauthshim-example",
 		},
-
-		// Local users configuration
 		LocalUsers: authpublic.LocalUsersConfig{
 			Enabled: true,
-			Users: []*authpublic.LocalUser{
-				{
-					Username:  "admin",
-					Usergroup: "admin",
-					// Password: "admin123" - In production, use haslocal.CreateHash() to generate hash
-					Password: "$argon2id$v=19$m=65536,t=4,p=4$dGVzdHNhbHQ$testhash",
-					ApiKey:   "example-api-key", // Authorization: Bearer example-api-key
-				},
-			},
+			Users:   []*authpublic.LocalUser{exampleLocalUser()},
 		},
-
-		// Local HTTP only — never enable in production
 		OAuth2AllowInsecureCookies: true,
-
-		// OAuth2 providers (optional)
 		OAuth2Providers: map[string]*authpublic.OAuth2Provider{
 			"github": {
 				ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
@@ -64,18 +61,14 @@ func main() {
 			},
 		},
 		OAuth2RedirectURL: "http://localhost:8080/oauth/callback",
-
-		// mTLS (Mutual TLS) configuration
 		Mtls: authpublic.MtlsConfig{
 			Enabled:              true,
-			RequireClientCert:    false, // Set to true to require client certs
-			UsernameFromCN:       true,  // Extract username from Common Name
-			UsernameFromSANEmail: false, // Or extract from SAN email
-			GroupFromOU:          true,  // Extract groups from Organizational Unit
-			GroupFromSANDNS:      false, // Or extract from SAN DNS names
+			RequireClientCert:    false,
+			UsernameFromCN:       true,
+			UsernameFromSANEmail: false,
+			GroupFromOU:          true,
+			GroupFromSANDNS:      false,
 		},
-
-		// Access Control Lists
 		AccessControlLists: []authpublic.AccessControlList{
 			{
 				Name:            "admin",
@@ -84,127 +77,116 @@ func main() {
 			},
 		},
 	}
+}
 
-	// Create session storage with YAML persistence
-	sessionStorage := sessions.NewSessionStorage(sessions.NewYAMLPersistence())
-
-	// Create AuthShimContext - this is the main entry point
-	authCtx, err := auth.NewAuthShimContext(cfg, sessionStorage)
-	if err != nil {
-		log.Fatalf("Failed to create auth context: %v", err)
+func exampleLocalUser() *authpublic.LocalUser {
+	// Demo-only credentials for the example; generate real hashes with haslocal.CreateHash().
+	return &authpublic.LocalUser{ //nolint:gosec // G101: intentional demo credentials
+		Username:  "admin",
+		Usergroup: "admin",
+		Password:  "$argon2id$v=19$m=65536,t=4,p=4$dGVzdHNhbHQ$testhash",
+		ApiKey:    "example-api-key",
 	}
+}
 
-	// Add mTLS to auth chain if enabled
+func setupProviders(cfg *authpublic.Config, authCtx *auth.AuthShimContext) *hasoauth2.OAuth2Handler {
 	if cfg.Mtls.Enabled {
 		authCtx.AddProvider(hasmtls.CheckUserFromMtls)
 	}
-
-	// Authenticate local users via Authorization: Bearer <apiKey>
 	authCtx.AddProvider(haslocal.CheckUserFromApiKey)
 
-	// Set up OAuth2 handler if configured
-	var oauth2Handler *hasoauth2.OAuth2Handler
-	if len(cfg.OAuth2Providers) > 0 {
-		oauth2Handler = hasoauth2.NewOAuth2Handler(cfg, authCtx.Sessions)
-		// Add OAuth2 to auth chain
-		authCtx.AddProvider(oauth2Handler.CheckUserFromOAuth2Cookie)
-
-		// Set up OAuth2 routes
-		http.HandleFunc("/oauth/login", oauth2Handler.HandleOAuthLogin)
-		http.HandleFunc("/oauth/callback", oauth2Handler.HandleOAuthCallback)
+	if len(cfg.OAuth2Providers) == 0 {
+		return nil
 	}
 
-	// Protected route - requires authentication
-	http.HandleFunc("/api/protected", func(w http.ResponseWriter, r *http.Request) {
-		// Authenticate the user
-		user := authCtx.AuthFromHttpReq(r)
+	oauth2Handler := hasoauth2.NewOAuth2Handler(cfg, authCtx.Sessions)
+	authCtx.AddProvider(oauth2Handler.CheckUserFromOAuth2Cookie)
+	http.HandleFunc("/oauth/login", oauth2Handler.HandleOAuthLogin)
+	http.HandleFunc("/oauth/callback", oauth2Handler.HandleOAuthCallback)
+	return oauth2Handler
+}
 
+func registerRoutes(cfg *authpublic.Config, authCtx *auth.AuthShimContext, oauth2Handler *hasoauth2.OAuth2Handler) {
+	http.HandleFunc("/api/protected", protectedHandler(authCtx))
+	http.HandleFunc("/api/admin", adminHandler(authCtx))
+	http.HandleFunc("/api/login", loginHandler(cfg, authCtx))
+	http.HandleFunc("/", indexHandler(authCtx, oauth2Handler))
+}
+
+func protectedHandler(authCtx *auth.AuthShimContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := authCtx.AuthFromHttpReq(r)
 		if user.IsGuest() {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-
-		// User is authenticated, proceed with request
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{
+		writeJSON(w, `{
 			"message": "Hello, %s!",
 			"username": "%s",
 			"usergroup": "%s",
 			"provider": "%s",
 			"acls": %v
 		}`, user.Username, user.Username, user.UsergroupLine, user.Provider, user.Acls)
-	})
+	}
+}
 
-	// Admin-only route
-	http.HandleFunc("/api/admin", func(w http.ResponseWriter, r *http.Request) {
+func adminHandler(authCtx *auth.AuthShimContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		user := authCtx.AuthFromHttpReq(r)
-
 		if user.IsGuest() {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-
-		// Check if user has admin ACL
-		hasAdminACL := false
-		for _, acl := range user.Acls {
-			if acl == "admin" {
-				hasAdminACL = true
-				break
-			}
-		}
-
-		if !hasAdminACL {
+		if !slices.Contains(user.Acls, "admin") {
 			http.Error(w, "Forbidden: Admin access required", http.StatusForbidden)
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{
+		writeJSON(w, `{
 			"message": "Admin access granted",
 			"username": "%s"
 		}`, user.Username)
-	})
+	}
+}
 
-	// Login endpoint (for local password authentication)
-	http.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
+func loginHandler(cfg *authpublic.Config, authCtx *auth.AuthShimContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-
-		username := r.FormValue("username")
-		password := r.FormValue("password")
-
-		if username == "" || password == "" {
-			http.Error(w, "Username and password required", http.StatusBadRequest)
+		if err := authenticateLocalLogin(w, r, cfg, authCtx); err != nil {
 			return
 		}
+		writeJSON(w, `{"message": "Login successful"}`)
+	}
+}
 
-		// Check password
-		if !haslocal.CheckUserPassword(cfg, username, password) {
-			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-			return
-		}
+func authenticateLocalLogin(w http.ResponseWriter, r *http.Request, cfg *authpublic.Config, authCtx *auth.AuthShimContext) error {
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	if username == "" || password == "" {
+		http.Error(w, "Username and password required", http.StatusBadRequest)
+		return fmt.Errorf("missing credentials")
+	}
+	if !haslocal.CheckUserPassword(cfg, username, password) {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return fmt.Errorf("invalid credentials")
+	}
+	sessionID, err := haslocal.NewSessionID()
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return err
+	}
+	authCtx.RegisterUserSession("local", sessionID, username, "")
+	haslocal.SetSessionCookie(w, r, cfg, sessionID)
+	return nil
+}
 
-		sessionID, err := haslocal.NewSessionID()
-		if err != nil {
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-
-		authCtx.RegisterUserSession("local", sessionID, username, "")
-		haslocal.SetSessionCookie(w, r, cfg, sessionID)
-
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"message": "Login successful"}`)
-	})
-
-	// Public route - no authentication required
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+func indexHandler(authCtx *auth.AuthShimContext, oauth2Handler *hasoauth2.OAuth2Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		user := authCtx.AuthFromHttpReq(r)
-
 		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, `<!DOCTYPE html>
+		mustFprintf(w, `<!DOCTYPE html>
 <html>
 <head>
 	<title>HTTP Auth Shim Example</title>
@@ -223,61 +205,71 @@ func main() {
 	`, user.Username, user.Provider, user.UsergroupLine)
 
 		if oauth2Handler != nil {
-			fmt.Fprintf(w, `		<li><a href="/oauth/login?provider=github">OAuth2 Login (GitHub)</a></li>
+			mustFprintf(w, `		<li><a href="/oauth/login?provider=github">OAuth2 Login (GitHub)</a></li>
 `)
 		}
-
-		fmt.Fprintf(w, `	</ul>
+		mustFprintf(w, `	</ul>
 </body>
 </html>`)
-	})
+	}
+}
 
+func writeJSON(w http.ResponseWriter, format string, args ...any) {
+	w.Header().Set("Content-Type", "application/json")
+	mustFprintf(w, format, args...)
+}
+
+func mustFprintf(w http.ResponseWriter, format string, args ...any) {
+	// Example responses only; production handlers should escape user-controlled content.
+	if _, err := fmt.Fprintf(w, format, args...); err != nil { //nolint:gosec // G705: example HTML/JSON demo
+		log.WithError(err).Warn("failed to write response")
+	}
+}
+
+func listenPort() string {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		return "8080"
 	}
+	return port
+}
 
-	// Create HTTP server
+func runServer(port string, authCtx *auth.AuthShimContext, oauth2Handler *hasoauth2.OAuth2Handler) {
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: nil,
+		Addr:              ":" + port,
+		Handler:           nil,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	// Setup graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	// Start server in goroutine
-	go func() {
-		log.Printf("Starting server on :%s", port)
-		log.Printf("Visit http://localhost:%s to see the example", port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed: %v", err)
-		}
-	}()
-
-	// Wait for shutdown signal
+	go serveHTTP(srv, port)
 	<-sigChan
-	log.Println("Shutting down gracefully...")
+	shutdownAll(srv, authCtx, oauth2Handler)
+}
 
-	// Create shutdown context with timeout
+func serveHTTP(srv *http.Server, port string) {
+	log.Printf("Starting server on :%s", port)
+	log.Printf("Visit http://localhost:%s to see the example", port)
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Server failed: %v", err)
+	}
+}
+
+func shutdownAll(srv *http.Server, authCtx *auth.AuthShimContext, oauth2Handler *hasoauth2.OAuth2Handler) {
+	log.Println("Shutting down gracefully...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Shutdown HTTP server
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Printf("Error shutting down server: %v", err)
 	}
-
-	// Shutdown OAuth2 handler if it exists
 	if oauth2Handler != nil {
 		oauth2Handler.Shutdown()
 	}
-
-	// Shutdown auth context
 	if err := authCtx.Shutdown(); err != nil {
 		log.Printf("Error shutting down auth context: %v", err)
 	}
-
 	log.Println("Shutdown complete")
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/jamesread/armature-httpauthshim/sessions"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetLocalSessionCookieName(t *testing.T) {
@@ -46,9 +47,9 @@ func TestCookieSecureDefaults(t *testing.T) {
 
 func TestConfigFromMap_Nil(t *testing.T) {
 	cfg, err := ConfigFromMap(nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, cfg)
-	assert.Equal(t, "", cfg.Jwt.Header)
+	assert.Empty(t, cfg.Jwt.Header)
 }
 
 func TestConfigFromMap_JWTAndHeaders(t *testing.T) {
@@ -65,7 +66,7 @@ func TestConfigFromMap_JWTAndHeaders(t *testing.T) {
 			"usernameFromCN": true,
 		},
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "Authorization", cfg.Jwt.Header)
 	assert.Equal(t, "s3cret", cfg.Jwt.HmacSecret)
 	assert.Equal(t, "X-Username", cfg.HttpHeader.Username)

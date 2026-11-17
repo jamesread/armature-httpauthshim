@@ -383,10 +383,10 @@ func validateSingleProvider(providers map[string]*SessionProvider, providerName 
 	return count
 }
 
-// validateSessionData validates loaded session data for correctness and security
-func (s *SessionStorage) validateSessionData() error {
+// validateSessionData validates loaded session data for correctness and security.
+func (s *SessionStorage) validateSessionData() {
 	if s.Providers == nil {
-		return nil // Empty is valid
+		return
 	}
 
 	now := time.Now().Unix()
@@ -403,8 +403,6 @@ func (s *SessionStorage) validateSessionData() error {
 			"invalidSessions": invalidSessions,
 		}).Warn("Removed invalid sessions during validation")
 	}
-
-	return nil
 }
 
 // Load loads sessions from storage into this storage instance using the configured persistence backend.
@@ -585,7 +583,7 @@ func retryLockAcquisition(lockPath string) (*os.File, error) {
 	const maxRetries = 10
 	const retryDelay = 100 * time.Millisecond
 
-	for i := 0; i < maxRetries; i++ {
+	for range maxRetries {
 		time.Sleep(retryDelay)
 		if lockFile, err := tryAcquireLockWithRetry(lockPath); err != nil || lockFile != nil {
 			return lockFile, err
@@ -885,7 +883,7 @@ func isSessionInvalid(session *UserSession, now, idleTimeoutSeconds int64) bool 
 	return isSessionExpired(session, now) || isSessionIdle(session, now, idleTimeoutSeconds)
 }
 
-func cleanupProviderSessions(providerName string, provider *SessionProvider, now, idleTimeoutSeconds int64) int {
+func cleanupProviderSessions(provider *SessionProvider, now, idleTimeoutSeconds int64) int {
 	if provider == nil || provider.Sessions == nil {
 		return 0
 	}
@@ -916,7 +914,7 @@ func cleanupProviderAndSessions(providers map[string]*SessionProvider, providerN
 		return 0
 	}
 
-	count := cleanupProviderSessions(providerName, provider, now, idleTimeoutSeconds)
+	count := cleanupProviderSessions(provider, now, idleTimeoutSeconds)
 	// Remove empty providers
 	if len(provider.Sessions) == 0 {
 		delete(providers, providerName)

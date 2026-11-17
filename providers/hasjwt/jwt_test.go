@@ -17,6 +17,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jamesread/armature-httpauthshim/authpublic"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func generateRSAKeyPair(t *testing.T) (*rsa.PrivateKey, []byte) {
@@ -146,7 +147,7 @@ func TestJWTSignatureVerificationFails(t *testing.T) {
 	testJwkValidation(t, -500, 403)
 }
 
-func createJWTTokenWithGroups(t *testing.T, privateKey *rsa.PrivateKey, groups interface{}) string {
+func createJWTTokenWithGroups(t *testing.T, privateKey *rsa.PrivateKey, groups any) string {
 	t.Helper()
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -252,7 +253,7 @@ func TestJWTRejectsTokenWithoutExp(t *testing.T) {
 	claims := token.Claims.(jwt.MapClaims)
 	claims["sub"] = "test"
 	tokenStr, err := token.SignedString(privateKey)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	user := checkUserFromBearerToken(t, baseJWTConfig(publicKeyPath), tokenStr)
 	assert.Nil(t, user)
@@ -269,7 +270,7 @@ func TestJWTRejectsWrongAudience(t *testing.T) {
 	claims["aud"] = "wrong-audience"
 	claims["iss"] = "test-issuer"
 	tokenStr, err := token.SignedString(privateKey)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cfg := baseJWTConfig(publicKeyPath)
 	cfg.Jwt.Aud = "expected-audience"
@@ -289,7 +290,7 @@ func TestJWTAcceptsMatchingAudience(t *testing.T) {
 	claims["aud"] = "expected-audience"
 	claims["iss"] = "test-issuer"
 	tokenStr, err := token.SignedString(privateKey)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cfg := baseJWTConfig(publicKeyPath)
 	cfg.Jwt.Aud = "expected-audience"
@@ -310,7 +311,7 @@ func TestJWTRejectsWrongIssuer(t *testing.T) {
 	claims["aud"] = "test-audience"
 	claims["iss"] = "wrong-issuer"
 	tokenStr, err := token.SignedString(privateKey)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cfg := baseJWTConfig(publicKeyPath)
 	cfg.Jwt.Issuer = "expected-issuer"
@@ -327,7 +328,7 @@ func TestHMACRejectsTokenWithoutExp(t *testing.T) {
 		"iss": "test-issuer",
 	})
 	tokenStr, err := token.SignedString([]byte(secret))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cfg := &authpublic.Config{
 		Jwt: authpublic.JwtConfig{
@@ -352,7 +353,7 @@ func TestHMACAcceptsValidToken(t *testing.T) {
 		"iss": "test-issuer",
 	})
 	tokenStr, err := token.SignedString([]byte(secret))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	cfg := &authpublic.Config{
 		Jwt: authpublic.JwtConfig{

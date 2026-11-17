@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	authTypes "github.com/jamesread/armature-httpauthshim/authpublic"
@@ -121,7 +120,7 @@ func TestWriteOAuthClientError(t *testing.T) {
 	writeOAuthClientError(rec, http.StatusBadRequest)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
-	assert.True(t, strings.Contains(rec.Body.String(), oauthClientError))
+	assert.Contains(t, rec.Body.String(), oauthClientError)
 }
 
 func TestOAuthPKCEEnabledByDefault(t *testing.T) {

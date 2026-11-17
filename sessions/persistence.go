@@ -23,7 +23,7 @@ type SessionPersistence interface {
 	// The dir and filename parameters identify where the data should be saved.
 	// Returns an error if saving fails.
 	Save(dir, filename string, storage *SessionStorage) error
-	
+
 	// RequiresFileLock returns true if this persistence backend requires file-based locking.
 	// File-based backends (like YAML) should return true to enable cross-process locking.
 	// Database backends should return false as they handle concurrency internally.
@@ -62,11 +62,7 @@ func tryLoadFromBackup(backupPath string, storage *SessionStorage, p *YAMLPersis
 	}
 
 	// Backup loaded successfully - validate and optionally restore
-	if err := storage.validateSessionData(); err != nil {
-		logrus.WithError(err).Error("Backup file validation failed")
-		storage.ensureEmpty()
-		return fmt.Errorf("backup file validation failed: %w", err)
-	}
+	storage.validateSessionData()
 
 	logrus.Info("Successfully recovered sessions from backup file")
 	// Optionally restore backup to main file
@@ -119,11 +115,7 @@ func (p *YAMLPersistence) Load(dir, filename string, storage *SessionStorage) er
 	}
 
 	// Main file loaded successfully - validate and create backup
-	if err := storage.validateSessionData(); err != nil {
-		logrus.WithError(err).Error("Session data validation failed")
-		storage.ensureEmpty()
-		return fmt.Errorf("session data validation failed: %w", err)
-	}
+	storage.validateSessionData()
 
 	createBackupFile(filePath, storage)
 	return nil

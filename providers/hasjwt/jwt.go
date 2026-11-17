@@ -646,7 +646,7 @@ func parseJwtTokenWithLocalKey(cfg *authtypes.Config, jwtString string) (*jwt.To
 
 	opts := buildJwtParserOptions(cfg.Jwt, rsaValidMethods())
 
-	return jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
+	return jwt.Parse(jwtString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("parseJwt expected token algorithm RSA but got: %v", token.Header["alg"])
 		}
@@ -659,7 +659,7 @@ func parseJwtTokenWithLocalKey(cfg *authtypes.Config, jwtString string) (*jwt.To
 func parseJwtTokenWithHMAC(cfg *authtypes.Config, jwtString string) (*jwt.Token, error) {
 	opts := buildJwtParserOptions(cfg.Jwt, hmacValidMethods())
 
-	return jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
+	return jwt.Parse(jwtString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("parseJwt expected token algorithm HMAC but got: %v", token.Header["alg"])
 		}
@@ -784,7 +784,7 @@ func parseJwtCtx(ctx context.Context, cfg *authtypes.Config, token string) *auth
 func parseGroupClaim(groupClaim string, claims jwt.MapClaims) string {
 	usergroup := ""
 	if val, ok := claims[groupClaim]; ok {
-		if array, ok := val.([]interface{}); ok {
+		if array, ok := val.([]any); ok {
 			groups := make([]string, len(array))
 			for i, v := range array {
 				groups[i] = fmt.Sprintf("%s", v)

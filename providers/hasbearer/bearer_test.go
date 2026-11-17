@@ -210,7 +210,7 @@ func TestCheckUserFromBearerToken_EmptyUsergroup(t *testing.T) {
 	user := CheckUserFromBearerToken(authCtx)
 	assert.NotNil(t, user)
 	assert.Equal(t, "nousergroup", user.Username)
-	assert.Equal(t, "", user.UsergroupLine)
+	assert.Empty(t, user.UsergroupLine)
 }
 
 func TestCheckUserFromBearerToken_EmptyToken(t *testing.T) {
